@@ -1,0 +1,65 @@
+{
+  "info": {
+    "_postman_id": "b1f3e8b2-0000-4c2a-9c7f-123456789abc",
+    "name": "Expense Sharing Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Minimal Postman collection for the Expense Sharing Backend"
+  },
+  "item": [
+    {
+      "name": "Create user",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\"\n}"
+        },
+        "url": { "raw": "http://localhost:3000/api/users", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","users"] }
+      }
+    },
+    {
+      "name": "List users",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:3000/api/users", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","users"] }
+      }
+    },
+    {
+      "name": "Create group",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Trip to Goa\",\n  \"memberIds\": [\"<userId1>\", \"<userId2>\"]\n}" },
+        "url": { "raw": "http://localhost:3000/api/groups", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","groups"] }
+      }
+    },
+    {
+      "name": "Add expense (EQUAL)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"groupId\": \"G1\",\n  \"paidBy\": \"U1\",\n  \"amount\": 900,\n  \"splitType\": \"EQUAL\",\n  \"splits\": [ { \"userId\": \"U1\" }, { \"userId\": \"U2\" }, { \"userId\": \"U3\" } ],\n  \"description\": \"Hotel\"\n}" },
+        "url": { "raw": "http://localhost:3000/api/expenses", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","expenses"] }
+      }
+    },
+    {
+      "name": "Get group balances",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "http://localhost:3000/api/groups/G1/balances", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","groups","G1","balances"] }
+      }
+    },
+    {
+      "name": "Create settlement",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"groupId\": \"G1\",\n  \"fromUserId\": \"U2\",\n  \"toUserId\": \"U1\",\n  \"amount\": 200\n}" },
+        "url": { "raw": "http://localhost:3000/api/settlements", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","settlements"] }
+      }
+    }
+  ]
+}
