@@ -29,133 +29,92 @@ Balances simplified hain taaki transactions kam se kam ho (creditor/debtor match
   - `expenseModel.js`
   - `settlementModel.js`
 - `src/services/balanceService.js` – Raw aur simplified balances compute karta hai; per-user summaries.
-- `src/controllers/*` – Request handling aur business rules:
-  - `userController.js`
-  - `groupController.js`
-  - `expenseController.js`
-  - `settlementController.js`
-- `src/routes/*` – API route definitions aur composition.
+# Expense Sharing Backend
 
+A small, well-structured Node.js backend for managing shared expenses between users and groups. It provides endpoints to create users and groups, record expenses with different split types (equal, exact, percent), compute simplified balances, and record settlements between users.
 
-### Core API Design (High-Level)
+This project is a focused backend prototype — data is kept in-memory for simplicity so it is easy to run and iterate during development.
 
-#### Users
-- **POST** `/api/users`
-  - Body: `{ "name": "adarsh_shukla", "email": "adarsh_shukla@example.com" }`
-  - Ek user create karta hai.
-- **GET** `/api/users`
-  - Saare users list karta hai.
+## Features
+- Create and manage users and groups
+- Add expenses with `EQUAL`, `EXACT`, and `PERCENT` split types
+- Compute simplified balances (minimizes transactions between members)
+- Record settlements to reduce outstanding balances
+- Small, modular codebase ready for adding persistence and auth
 
-#### Groups
-- **POST** `/api/groups`
-  - Body:
-    ```json
-    {
-      "name": "Trip to Goa",
-      "memberIds": ["<userId1>", "<userId2>"]
-    }
-    ```
-  - Initial members ke saath group create karta hai (sirf existing users accept honge).
+## Tech Stack
+- Node.js (recommended >= 18)
+- Express
+- dotenv, helmet, cors, morgan
 
-- **GET** `/api/groups`
-  - Saare groups list karta hai.
+## Quick start
+1. Install dependencies:
 
-- **POST** `/api/groups/:groupId/members`
-  - Body: `{ "userId": "<userId>" }`
-  - Ek existing user ko existing group mein add karta hai.
+```powershell
+npm install
+```
 
-- **GET** `/api/groups/:groupId/balances`
-  - Group ke andar simplified balances return karta hai:
-  - Example response:
-    ```json
-    """
-    # Expense Sharing Backend
+2. Create a `.env` file if needed (see `src/config/config.js`) and set `PORT` (optional).
 
-    A small, well-structured Node.js backend for managing shared expenses between users and groups. It provides endpoints to create users and groups, record expenses with different split types (equal, exact, percent), compute simplified balances, and record settlements between users.
+3. Run the app:
 
-    This project is a focused backend prototype—data is kept in-memory for simplicity so it is easy to run and iterate during development.
+```powershell
+npm start
+```
 
-    ## Features
-    - Create and manage users and groups
-    - Add expenses with `EQUAL`, `EXACT`, and `PERCENT` split types
-    - Compute simplified balances (minimizes transactions between members)
-    - Record settlements to reduce outstanding balances
-    - Small, modular codebase ready for adding persistence and auth
+By default the server listens on the port from `process.env.PORT` or `3000`.
 
-    ## Tech Stack
-    - Node.js (recommended >= 18)
-    - Express
-    - dotenv, helmet, cors, morgan
+## API Overview (short)
 
-    ## Quick start
-    1. Install dependencies:
+- POST `/api/users` — create a user. Body: `{ name, email }`.
+- GET `/api/users` — list users.
+- POST `/api/groups` — create a group. Body: `{ name, memberIds }`.
+- POST `/api/groups/:groupId/members` — add a user to a group.
+- GET `/api/groups/:groupId/balances` — simplified balances for a group.
+- POST `/api/expenses` — add an expense. Body example:
 
-    ```powershell
-    npm install
-    ```
+```json
+{
+  "groupId": "G1",
+  "paidBy": "U1",
+  "amount": 1000,
+  "splitType": "EQUAL", // or EXACT, PERCENT
+  "splits": [ { "userId": "U1" }, { "userId": "U2" } ],
+  "description": "Dinner"
+}
+```
 
-    2. Create a `.env` file if needed (see `src/config/config.js`) and set `PORT` (optional).
+- POST `/api/settlements` — record a settlement between users. Body:
 
-    3. Run the app:
+```json
+{
+  "groupId": "G1",
+  "fromUserId": "U2",
+  "toUserId": "U1",
+  "amount": 200
+}
+```
 
-    ```powershell
-    npm start
-    ```
+Split rules:
+- EQUAL: amount split evenly among listed users.
+- EXACT: caller provides each user's exact amount (sums must match).
+- PERCENT: caller provides percentages per user (must sum to 100).
 
-    By default the server listens on the port from `process.env.PORT` or `3000`.
+## Development notes
+- Data is stored in-memory in `src/models/*` for simplicity. To make this production-ready, swap models for a database-backed implementation (Postgres/MongoDB) and add authentication.
+- The balance computation lives in `src/services/balanceService.js` and controllers keep request validation and business logic separated.
 
-    ## API Overview (short)
+## Next improvements
+- Add authentication & authorization
+- Persist data to a database
+- Add tests, structured logging, and input validation
 
-    - POST `/api/users` — create a user. Body: `{ name, email }`.
-    - GET `/api/users` — list users.
-    - POST `/api/groups` — create a group. Body: `{ name, memberIds }`.
-    - POST `/api/groups/:groupId/members` — add a user to a group.
-    - GET `/api/groups/:groupId/balances` — simplified balances for a group.
-    - POST `/api/expenses` — add an expense. Body example:
+---
 
-    ```json
-    {
-      "groupId": "G1",
-      "paidBy": "U1",
+If you'd like, I can also:
+- Add a `LICENSE` file
+- Expand the README with detailed endpoint examples
+- Create a minimal Postman collection or OpenAPI spec
+
+Tell me which of those you want next.
       "amount": 1000,
-      "splitType": "EQUAL", // or EXACT, PERCENT
-      "splits": [ { "userId": "U1" }, { "userId": "U2" } ],
-      "description": "Dinner"
-    }
-    ```
-
-    - POST `/api/settlements` — record a settlement between users. Body:
-
-    ```json
-    {
-      "groupId": "G1",
-      "fromUserId": "U2",
-      "toUserId": "U1",
-      "amount": 200
-    }
-    ```
-
-    Split rules:
-    - EQUAL: amount split evenly among listed users.
-    - EXACT: caller provides each user's exact amount (sums must match).
-    - PERCENT: caller provides percentages per user (must sum to 100).
-
-    ## Development notes
-    - Data is stored in-memory in `src/models/*` for simplicity. To make this production-ready, swap models for a database-backed implementation (Postgres/MongoDB) and add authentication.
-    - The balance computation lives in `src/services/balanceService.js` and controllers keep request validation and business logic separated.
-
-    ## Next improvements
-    - Add authentication & authorization
-    - Persist data to a database
-    - Add tests, structured logging, and input validation
-
-    ---
-
-    If you'd like, I can also:
-    - Add a `LICENSE` file
-    - Improve the README section for each endpoint with request/response examples
-    - Create a minimal Postman collection or OpenAPI spec
-
-    Tell me which of those you want next.
-    """
-      "paidBy": "U1",
