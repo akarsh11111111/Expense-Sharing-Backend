@@ -68,35 +68,64 @@ Balances simplified hain taaki transactions kam se kam ho (creditor/debtor match
   - Group ke andar simplified balances return karta hai:
   - Example response:
     ```json
-    [
-      { "fromUserId": "U1", "toUserId": "U2", "amount": 150.5 }
-    ]
+    """
+    # Expense Sharing Backend
+
+    A small, well-structured Node.js backend for managing shared expenses between users and groups. It provides endpoints to create users and groups, record expenses with different split types (equal, exact, percent), compute simplified balances, and record settlements between users.
+
+    This project is a focused backend prototype—data is kept in-memory for simplicity so it is easy to run and iterate during development.
+
+    ## Features
+    - Create and manage users and groups
+    - Add expenses with `EQUAL`, `EXACT`, and `PERCENT` split types
+    - Compute simplified balances (minimizes transactions between members)
+    - Record settlements to reduce outstanding balances
+    - Small, modular codebase ready for adding persistence and auth
+
+    ## Tech Stack
+    - Node.js (recommended >= 18)
+    - Express
+    - dotenv, helmet, cors, morgan
+
+    ## Quick start
+    1. Install dependencies:
+
+    ```powershell
+    npm install
     ```
 
-- **GET** `/api/groups/:groupId/users/:userId/balance`
-  - Dikhaata hai:
-    - `totalOwes` – user kitna dusron ko owe karta hai.
-    - `totalOwed` – dusre user kitna is user ko owe karte hain.
-    - Detailed lists of `owes` aur `owedBy`.
+    2. Create a `.env` file if needed (see `src/config/config.js`) and set `PORT` (optional).
 
+    3. Run the app:
 
+    ```powershell
+    npm start
+    ```
 
-  - Validations:
-    - `groupId`, `paidBy` exist karne chahiye aur group ka hissa hone chahiye.
-    - Saare split users exist karne chahiye aur group ke members hone chahiye.
-    - `EXACT` mein `splits` ke `amount` ka sum main `amount` ke barabar hona chahiye.
-    - `PERCENT` mein `splits` ke `percent` ka sum 100 hona chahiye.
+    By default the server listens on the port from `process.env.PORT` or `3000`.
 
-- **GET** `/api/expenses/group/:groupId`
-  - Diye gaye group ke saare expenses list karta hai.
+    ## API Overview (short)
 
+    - POST `/api/users` — create a user. Body: `{ name, email }`.
+    - GET `/api/users` — list users.
+    - POST `/api/groups` — create a group. Body: `{ name, memberIds }`.
+    - POST `/api/groups/:groupId/members` — add a user to a group.
+    - GET `/api/groups/:groupId/balances` — simplified balances for a group.
+    - POST `/api/expenses` — add an expense. Body example:
 
+    ```json
+    {
+      "groupId": "G1",
+      "paidBy": "U1",
+      "amount": 1000,
+      "splitType": "EQUAL", // or EXACT, PERCENT
+      "splits": [ { "userId": "U1" }, { "userId": "U2" } ],
+      "description": "Dinner"
+    }
+    ```
 
-  
+    - POST `/api/settlements` — record a settlement between users. Body:
 
-#### Settlements
-- **POST** `/api/settlements`
-  - Body:
     ```json
     {
       "groupId": "G1",
@@ -105,78 +134,28 @@ Balances simplified hain taaki transactions kam se kam ho (creditor/debtor match
       "amount": 200
     }
     ```
-  
 
-#### Expenses -- 
-- **POST** `/api/expenses`
-  - Body (generic shape):
-    ```json
-    {
-      "groupId": "<groupId>",
-      "paidBy": "<payerUserId>",
-      "amount": 1000,
-      "splitType": "EQUAL | EXACT | PERCENT",
-      "splits": [],
-      "description": "Dinner"
-    }
-    ```
-    yaha pe 3 types ke expenses use kiye hai equal exact percent teeno ke defination neeche explain kr diye hai["splitType": "EQUAL | EXACT | PERCENT",]
+    Split rules:
+    - EQUAL: amount split evenly among listed users.
+    - EXACT: caller provides each user's exact amount (sums must match).
+    - PERCENT: caller provides percentages per user (must sum to 100).
 
+    ## Development notes
+    - Data is stored in-memory in `src/models/*` for simplicity. To make this production-ready, swap models for a database-backed implementation (Postgres/MongoDB) and add authentication.
+    - The balance computation lives in `src/services/balanceService.js` and controllers keep request validation and business logic separated.
 
-  - **EQUAL split**:
-    ```json
-    {
-      "groupId": "G1",
+    ## Next improvements
+    - Add authentication & authorization
+    - Persist data to a database
+    - Add tests, structured logging, and input validation
+
+    ---
+
+    If you'd like, I can also:
+    - Add a `LICENSE` file
+    - Improve the README section for each endpoint with request/response examples
+    - Create a minimal Postman collection or OpenAPI spec
+
+    Tell me which of those you want next.
+    """
       "paidBy": "U1",
-      "amount": 900,
-      "splitType": "EQUAL",
-      "splits": [
-        { "userId": "U1" },
-        { "userId": "U2" },
-        { "userId": "U3" }
-      ],
-      "description": "Hotel"
-    }
-    ```
-
-  - **EXACT split** (must sum to `amount`):
-    ```json
-    {
-      "groupId": "G1",
-      "paidBy": "U1",
-      "amount": 900,
-      "splitType": "EXACT",
-      "splits": [
-        { "userId": "U1", "amount": 300 },
-        { "userId": "U2", "amount": 300 },
-        { "userId": "U3", "amount": 300 }
-      ]
-    }
-    ```
-
-  - **PERCENT split** (percents must sum to 100):
-    ```json
-    {
-      "groupId": "G1",
-      "paidBy": "U1",
-      "amount": 1000,
-      "splitType": "PERCENT",
-      "splits": [
-        { "userId": "U1", "percent": 50 },
-        { "userId": "U2", "percent": 25 },
-        { "userId": "U3", "percent": 25 }
-      ]
-    }
-    phir se ek baar explain kr de rha 
-    split types**:
-- **EQUAL** – Total specified users mein barabar split hota hai.
-- **EXACT** – Caller har user ke liye exact amount deta hai; ye total ke barabar hona chahiye.
-- **PERCENT** – Caller har user ke liye percentage deta hai; ye 100 hona chahiye.
-    ```
-
-  ----  AAGE MAI KYA KARNE WALA HU EXPAND KRNE KE LIYE --------
-
-  - Authentication aur authorization middleware add karenge.
-  - Data ko database (e.g., PostgreSQL, MongoDB) mein persist karenge.
-  - Pagination, soft deletes, aur richer querying add karenge.
-  - Structured logging aur metrics add karenge.
