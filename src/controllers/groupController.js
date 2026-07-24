@@ -137,7 +137,23 @@ const reconcileBalances = (req, res, next) => {
     next(err)
   }
 }
-
+const getUserBalanceInGroup = (req, res, next) => {
+  try {
+    const { groupId, userId } = req.params
+    const group = groupStore.getGroup(groupId)
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' })
+    }
+    const user = userStore.getUser(userId)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+    const summary = getUserSummary(groupId, userId)
+    res.json(summary)
+  } catch (err) {
+    next(err)
+  }
+}
 const reconcileBalances = (req, res, next) => {
   try {
     const { groupId } = req.params
