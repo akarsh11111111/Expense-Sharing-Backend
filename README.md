@@ -1,4 +1,4 @@
-## Expense Sharing Backend
+ ## Expense Sharing Backend
 
 A small, well-structured Node.js/Express backend for managing shared expenses between users and groups. The API lets you create users and groups, record expenses using multiple split methods (`EQUAL`, `EXACT`, `PERCENT`), compute simplified balances, and record settlements.
 
