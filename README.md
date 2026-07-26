@@ -4,7 +4,7 @@ A small, well-structured Node.js/Express backend for managing shared expenses be
 
 This repository is a development prototype: data is stored in-memory for simplicity so you can run and iterate quickly.
 
-## Features
+## Features##
 - Create and manage users and groups
 - Add expenses with `EQUAL`, `EXACT`, and `PERCENT` split types
 - Compute simplified balances that minimize transactions
